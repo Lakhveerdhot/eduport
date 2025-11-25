@@ -21,8 +21,8 @@ app.use('/api/student', studentRoutes);
 
 // General public routes
 import { getCourses, getCourseById } from './controllers/generalController.js';
-app.get('/courses', getCourses);
-app.get('/courses/:id', getCourseById);
+app.get('/api/courses', getCourses);
+app.get('/api/courses/:id', getCourseById);
 
 // 404 and error handler
 app.use(notFound);

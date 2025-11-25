@@ -23,7 +23,7 @@ export default function Login(){
     e.preventDefault();
     setError(null);
     try {
-      const res = await api.post('/api/auth/login', { email, password });
+      const res = await api.post('/auth/login', { email, password });
       const { token, user } = res.data;
       login({ token, user });
       // redirect based on role
