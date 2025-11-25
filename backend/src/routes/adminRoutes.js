@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUsers, createUser, updateUser, deleteUser } from '../controllers/adminController.js';
+import { getUsers, createUser, updateUser, deleteUser, testNotification } from '../controllers/adminController.js';
 import { verifyToken, requireRole } from '../middlewares/auth.js';
 import { validate } from '../middlewares/validation.js';
 import { signupSchema } from '../middlewares/validation.js';
@@ -14,5 +14,8 @@ router.get('/users', getUsers);
 router.post('/users', validate(signupSchema), createUser);
 router.put('/users/:id', updateUser);
 router.delete('/users/:id', deleteUser);
+
+// Test notification endpoint
+router.post('/notify-now/:courseId', testNotification);
 
 export default router;

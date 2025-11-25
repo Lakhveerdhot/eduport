@@ -20,8 +20,8 @@ export default function Navbar(){
 
         <div className="flex items-center gap-3">
           <Link to="/signup" className="hidden sm:inline-block text-sm px-3 py-2 rounded-md text-indigo-700 hover:bg-indigo-50">Host a Meeting</Link>
-          {!user && <Link to="/signup" className="hidden md:inline-block bg-indigo-600 text-white px-4 py-2 rounded-md text-sm">Sign Up</Link>}
           {!user && <Link to="/login" className="text-sm text-indigo-700 hover:underline">Sign In</Link>}
+          {!user && <Link to="/signup" className="hidden md:inline-block bg-indigo-600 text-white px-4 py-2 rounded-md text-sm">Sign Up</Link>}
           {user && (
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-700">{user.fullName}</div>

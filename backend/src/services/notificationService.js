@@ -70,7 +70,7 @@ const checkAndSendNotifications = async () => {
           console.log(`Notification (no SMTP): Class "${course.title}" starts at ${course.startTime}. Would notify: ${recipients.join(',')}`);
         }
       } catch (mailErr) {
-        console.error('Error sending notification emails:', mailErr);
+        console.warn(`⚠️  Email send failed: ${mailErr.message} (Check SMTP_USER/SMTP_PASS in .env are correct)`);
       }
     }
   } catch (error) {
