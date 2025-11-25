@@ -5,6 +5,8 @@ import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import JoinMeeting from './pages/JoinMeeting';
+import InstantMeeting from './pages/meeting/InstantMeeting';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentAttendance from './pages/student/StudentAttendance';
 import TeacherDashboard from './pages/teacher/TeacherDashboard';
@@ -31,6 +33,8 @@ export default function App(){
           <Route path="/admin/dashboard" element={<ProtectedRoute roles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/courses" element={<CoursesList />} />
           <Route path="/courses/:id" element={<ProtectedRoute roles={["student","teacher","admin"]}><CourseDetail /></ProtectedRoute>} />
+          <Route path="/join-meeting" element={<JoinMeeting />} />
+          <Route path="/meetings/:id/instant" element={<InstantMeeting />} />
 
           <Route path="*" element={<div className="p-6">Page not found</div>} />
         </Routes>

@@ -1,9 +1,12 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import MeetingModal from './MeetingModal';
 
 export default function Navbar(){
   const { user, logout } = useAuth();
+  const [showMeeting, setShowMeeting] = useState(false);
+  const navigate = useNavigate();
   return (
     <header className="bg-white border-b">
       <div className="container-wide mx-auto px-6 py-3 flex items-center justify-between">
@@ -19,7 +22,16 @@ export default function Navbar(){
         </div>
 
         <div className="flex items-center gap-3">
-          <Link to="/signup" className="hidden sm:inline-block text-sm px-3 py-2 rounded-md text-indigo-700 hover:bg-indigo-50">Host a Meeting</Link>
+          {/* Meeting button: behavior varies by role */}
+          {!user && (
+            <Link to="/signup" className="hidden sm:inline-block text-sm px-3 py-2 rounded-md text-indigo-700 hover:bg-indigo-50">Host a Meeting</Link>
+          )}
+          {user && user.role === 'teacher' && (
+            <button onClick={() => setShowMeeting(true)} className="hidden sm:inline-block text-sm px-3 py-2 rounded-md text-indigo-700 hover:bg-indigo-50">Host a Meeting</button>
+          )}
+          {user && user.role === 'student' && (
+            <button onClick={() => navigate('/join-meeting')} className="hidden sm:inline-block text-sm px-3 py-2 rounded-md text-indigo-700 hover:bg-indigo-50">Join Meeting</button>
+          )}
           {!user && <Link to="/login" className="text-sm text-indigo-700 hover:underline">Sign In</Link>}
           {!user && <Link to="/signup" className="hidden md:inline-block bg-indigo-600 text-white px-4 py-2 rounded-md text-sm">Sign Up</Link>}
           {user && (
@@ -30,6 +42,7 @@ export default function Navbar(){
           )}
         </div>
       </div>
+      {showMeeting && <MeetingModal onClose={() => setShowMeeting(false)} />}
     </header>
   );
 }

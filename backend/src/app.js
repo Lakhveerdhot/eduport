@@ -5,6 +5,7 @@ import authRoutes from './routes/authRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import teacherRoutes from './routes/teacherRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
+import meetingRoutes from './routes/meetingRoutes.js';
 import { notFound, errorHandler } from './middlewares/errorHandler.js';
 
 const app = express();
@@ -18,6 +19,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api/meetings', meetingRoutes);
 
 // General public routes
 import { getCourses, getCourseById } from './controllers/generalController.js';
