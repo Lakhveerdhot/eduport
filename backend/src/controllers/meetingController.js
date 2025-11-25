@@ -1,72 +1,117 @@
 import { randomUUID } from 'crypto';
 
-// In-memory store for meetings. Key: id, Value: { id, offer, answer, candidates: {host:[],joiner:[]}, meta }
+// meetings store supports multi-peer signaling
+// meeting: {
+//   id,
+//   meta: { createdAt, host },
+//   offers: { [peerId]: RTCSessionDescription }, // offers from joiners
+//   answers: { [peerId]: RTCSessionDescription }, // answers from host for each peer
+//   candidates: { [peerId]: { host: [], joiner: [] } }
+// }
 const meetings = new Map();
+
+const ensurePeerSlots = (m, peerId) => {
+  if (!m.offers) m.offers = {};
+  if (!m.answers) m.answers = {};
+  if (!m.candidates) m.candidates = {};
+  if (!m.candidates[peerId]) m.candidates[peerId] = { host: [], joiner: [] };
+};
 
 export const createMeeting = (req, res) => {
   const id = randomUUID();
   const meeting = {
     id,
-    offer: null,
-    answer: null,
-    candidates: { host: [], joiner: [] },
+    offers: {},
+    answers: {},
+    candidates: {},
     meta: { createdAt: Date.now(), host: req.user?.id || null }
   };
   meetings.set(id, meeting);
   res.json({ id });
 };
 
+// Joiner posts an offer (includes peerId)
 export const postOffer = (req, res) => {
   const { id } = req.params;
-  const { offer } = req.body;
+  const { offer, peerId } = req.body;
+  if (!peerId) return res.status(400).json({ message: 'peerId required' });
   const m = meetings.get(id);
   if (!m) return res.status(404).json({ message: 'Meeting not found' });
-  m.offer = offer;
+  ensurePeerSlots(m, peerId);
+  m.offers[peerId] = offer;
   res.json({ ok: true });
 };
 
+// Host can list all offers
+export const getOffers = (req, res) => {
+  const { id } = req.params;
+  const m = meetings.get(id);
+  if (!m) return res.status(404).json({ message: 'Meeting not found' });
+  res.json({ offers: m.offers || {} });
+};
+
+// Get specific offer for peerId
 export const getOffer = (req, res) => {
   const { id } = req.params;
-  const m = meetings.get(id);
-  if (!m || !m.offer) return res.status(404).json({ message: 'Offer not found' });
-  res.json({ offer: m.offer });
-};
-
-export const postAnswer = (req, res) => {
-  const { id } = req.params;
-  const { answer } = req.body;
+  const { peerId } = req.query;
   const m = meetings.get(id);
   if (!m) return res.status(404).json({ message: 'Meeting not found' });
-  m.answer = answer;
+  if (!peerId) return res.status(400).json({ message: 'peerId required' });
+  const o = (m.offers || {})[peerId];
+  if (!o) return res.status(404).json({ message: 'Offer not found' });
+  res.json({ offer: o });
+};
+
+// Host posts an answer for a specific peerId
+export const postAnswer = (req, res) => {
+  const { id } = req.params;
+  const { answer, peerId } = req.body;
+  if (!peerId) return res.status(400).json({ message: 'peerId required' });
+  const m = meetings.get(id);
+  if (!m) return res.status(404).json({ message: 'Meeting not found' });
+  ensurePeerSlots(m, peerId);
+  m.answers[peerId] = answer;
   res.json({ ok: true });
+};
+
+export const getAnswers = (req, res) => {
+  const { id } = req.params;
+  const m = meetings.get(id);
+  if (!m) return res.status(404).json({ message: 'Meeting not found' });
+  res.json({ answers: m.answers || {} });
 };
 
 export const getAnswer = (req, res) => {
   const { id } = req.params;
+  const { peerId } = req.query;
   const m = meetings.get(id);
-  if (!m || !m.answer) return res.status(404).json({ message: 'Answer not found' });
-  res.json({ answer: m.answer });
+  if (!m) return res.status(404).json({ message: 'Meeting not found' });
+  if (!peerId) return res.status(400).json({ message: 'peerId required' });
+  const a = (m.answers || {})[peerId];
+  if (!a) return res.status(404).json({ message: 'Answer not found' });
+  res.json({ answer: a });
 };
 
 export const postCandidate = (req, res) => {
   const { id } = req.params;
-  const { candidate, role } = req.body; // role: 'host' | 'joiner'
+  const { candidate, peerId, role } = req.body; // role: 'host' | 'joiner'
+  if (!peerId) return res.status(400).json({ message: 'peerId required' });
   const m = meetings.get(id);
   if (!m) return res.status(404).json({ message: 'Meeting not found' });
   if (!role || !['host', 'joiner'].includes(role)) return res.status(400).json({ message: 'Invalid role' });
-  m.candidates[role].push(candidate);
+  ensurePeerSlots(m, peerId);
+  m.candidates[peerId][role].push(candidate);
   res.json({ ok: true });
 };
 
 export const getCandidates = (req, res) => {
   const { id } = req.params;
-  const { role } = req.query; // role to fetch candidates for the caller's role (they want the other side's candidates)
+  const { peerId } = req.query;
   const m = meetings.get(id);
   if (!m) return res.status(404).json({ message: 'Meeting not found' });
-  // if role is host, return joiner candidates (i.e., other side)
-  if (!role) return res.json({ candidates: m.candidates });
-  const other = role === 'host' ? 'joiner' : 'host';
-  res.json({ candidates: m.candidates[other] || [] });
+  if (!peerId) return res.json({ candidates: m.candidates || {} });
+  const c = (m.candidates || {})[peerId] || { host: [], joiner: [] };
+  res.json({ candidates: c });
 };
 
 export const deleteMeeting = (req, res) => {

@@ -2,8 +2,10 @@ import express from 'express';
 import {
   createMeeting,
   postOffer,
+  getOffers,
   getOffer,
   postAnswer,
+  getAnswers,
   getAnswer,
   postCandidate,
   getCandidates,
@@ -18,9 +20,11 @@ router.post('/', verifyToken, createMeeting);
 
 // offer/answer/candidates signaling endpoints
 router.post('/:id/offer', verifyToken, postOffer);
+router.get('/:id/offers', verifyToken, getOffers);
 router.get('/:id/offer', verifyToken, getOffer);
 
 router.post('/:id/answer', verifyToken, postAnswer);
+router.get('/:id/answers', verifyToken, getAnswers);
 router.get('/:id/answer', verifyToken, getAnswer);
 
 router.post('/:id/candidate', verifyToken, postCandidate);
