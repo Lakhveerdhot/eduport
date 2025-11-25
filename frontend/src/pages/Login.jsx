@@ -23,7 +23,7 @@ export default function Login(){
     e.preventDefault();
     setError(null);
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/api/auth/login', { email, password });
       const { token, user } = res.data;
       login({ token, user });
       // redirect based on role
@@ -41,8 +41,8 @@ export default function Login(){
         <h2 className="text-xl font-bold mb-4">Login</h2>
         {error && <div className="text-red-600 mb-2">{error}</div>}
         <form onSubmit={submit} className="space-y-3">
-          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" className="w-full border p-2 rounded" />
-          <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" type="password" className="w-full border p-2 rounded" />
+          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" type="email" autoComplete="email" className="w-full border p-2 rounded" />
+          <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" type="password" autoComplete="current-password" className="w-full border p-2 rounded" />
           <button className="w-full bg-blue-600 text-white py-2 rounded">Login</button>
         </form>
       </div>

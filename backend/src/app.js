@@ -14,10 +14,10 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/auth', authRoutes);
-app.use('/admin', adminRoutes);
-app.use('/teacher', teacherRoutes);
-app.use('/student', studentRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/teacher', teacherRoutes);
+app.use('/api/student', studentRoutes);
 
 // General public routes
 import { getCourses, getCourseById } from './controllers/generalController.js';
