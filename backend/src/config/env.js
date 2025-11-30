@@ -3,6 +3,21 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
+// Helper function to parse DATABASE_URL
+const parseDatabaseUrl = (url) => {
+  if (!url) return null;
+  const regex = /^mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)$/;
+  const match = url.match(regex);
+  if (!match) return null;
+  return {
+    user: match[1],
+    password: match[2],
+    host: match[3],
+    port: parseInt(match[4]),
+    database: match[5]
+  };
+};
+
 let cfg;
 if (process.env.NODE_ENV === 'test') {
   cfg = {
@@ -20,36 +35,50 @@ if (process.env.NODE_ENV === 'test') {
     }
   };
 } else {
-  const requiredEnvVars = [
-    'PORT',
-    'DB_HOST',
-    'DB_PORT',
-    'DB_USER',
-    'DB_PASSWORD',
-    'DB_NAME',
-    'JWT_SECRET',
-    'JWT_EXPIRES_IN'
-  ];
+  // Check if DATABASE_URL is provided (for Railway)
+  const dbFromUrl = parseDatabaseUrl(process.env.DATABASE_URL);
 
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-  if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
-  }
+  if (dbFromUrl) {
+    cfg = {
+      port: process.env.PORT,
+      db: dbFromUrl,
+      jwt: {
+        secret: process.env.JWT_SECRET,
+        expiresIn: process.env.JWT_EXPIRES_IN || '7d'
+      }
+    };
+  } else {
+    // Fallback to individual variables
+    const requiredEnvVars = [
+      'PORT',
+      'DB_HOST',
+      'DB_PORT',
+      'DB_USER',
+      'DB_PASSWORD',
+      'DB_NAME',
+      'JWT_SECRET'
+    ];
 
-  cfg = {
-    port: process.env.PORT,
-    db: {
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
-    },
-    jwt: {
-      secret: process.env.JWT_SECRET,
-      expiresIn: process.env.JWT_EXPIRES_IN
+    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+    if (missingVars.length > 0) {
+      throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
     }
-  };
+
+    cfg = {
+      port: process.env.PORT,
+      db: {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
+      },
+      jwt: {
+        secret: process.env.JWT_SECRET,
+        expiresIn: process.env.JWT_EXPIRES_IN || '7d'
+      }
+    };
+  }
 }
 
 // Optional email / SMTP configuration (not required in test or development)

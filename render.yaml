@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: eduport-backend
+    runtime: node
+    buildCommand: npm install && npm run migrate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # Set this in Render dashboard with your Railway MySQL URL
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: EMAIL_FROM
+        sync: false # Set your email (optional)
+      - key: SMTP_HOST
+        sync: false # Set your SMTP host (optional)
+      - key: SMTP_PORT
+        sync: false # Set your SMTP port (optional)
+      - key: SMTP_USER
+        sync: false # Set your SMTP user (optional)
+      - key: SMTP_PASS
+        sync: false # Set your SMTP password (optional)
